@@ -1,4 +1,4 @@
-package com.amin.beer.order.service.web.model;
+package com.amin.brewery.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

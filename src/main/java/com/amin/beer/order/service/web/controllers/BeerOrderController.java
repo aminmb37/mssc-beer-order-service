@@ -18,8 +18,8 @@
 package com.amin.beer.order.service.web.controllers;
 
 import com.amin.beer.order.service.services.BeerOrderService;
-import com.amin.beer.order.service.web.model.BeerOrderDto;
-import com.amin.beer.order.service.web.model.BeerOrderPagedList;
+import com.amin.brewery.model.BeerOrderDto;
+import com.amin.brewery.model.BeerOrderPagedList;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

@@ -4,8 +4,8 @@ import com.amin.beer.order.service.bootstrap.BeerOrderBootStrap;
 import com.amin.beer.order.service.domain.Customer;
 import com.amin.beer.order.service.repositories.BeerOrderRepository;
 import com.amin.beer.order.service.repositories.CustomerRepository;
-import com.amin.beer.order.service.web.model.BeerOrderDto;
-import com.amin.beer.order.service.web.model.BeerOrderLineDto;
+import com.amin.brewery.model.BeerOrderDto;
+import com.amin.brewery.model.BeerOrderLineDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -71,6 +71,6 @@ public class TastingRoomService {
     }
 
     private String getRandomBeerUpc() {
-        return beerUpcs.get(new Random().nextInt(beerUpcs.size() -0));
+        return beerUpcs.get(new Random().nextInt(beerUpcs.size()));
     }
 }

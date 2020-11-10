@@ -1,7 +1,7 @@
 package com.amin.beer.order.service.web.mappers;
 
 import com.amin.beer.order.service.domain.BeerOrderLine;
-import com.amin.beer.order.service.web.model.BeerOrderLineDto;
+import com.amin.brewery.model.BeerOrderLineDto;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

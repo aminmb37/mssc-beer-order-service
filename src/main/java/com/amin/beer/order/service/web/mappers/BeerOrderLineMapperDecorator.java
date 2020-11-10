@@ -2,8 +2,8 @@ package com.amin.beer.order.service.web.mappers;
 
 import com.amin.beer.order.service.domain.BeerOrderLine;
 import com.amin.beer.order.service.services.beer.BeerService;
-import com.amin.beer.order.service.web.model.BeerDto;
-import com.amin.beer.order.service.web.model.BeerOrderLineDto;
+import com.amin.brewery.model.BeerDto;
+import com.amin.brewery.model.BeerOrderLineDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
