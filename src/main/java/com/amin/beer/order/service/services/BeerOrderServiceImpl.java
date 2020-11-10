@@ -18,8 +18,8 @@
 package com.amin.beer.order.service.services;
 
 import com.amin.beer.order.service.domain.BeerOrder;
+import com.amin.beer.order.service.domain.BeerOrderStatusEnum;
 import com.amin.beer.order.service.domain.Customer;
-import com.amin.beer.order.service.domain.OrderStatusEnum;
 import com.amin.beer.order.service.repositories.BeerOrderRepository;
 import com.amin.beer.order.service.repositories.CustomerRepository;
 import com.amin.beer.order.service.web.mappers.BeerOrderMapper;
@@ -84,7 +84,7 @@ public class BeerOrderServiceImpl implements BeerOrderService {
             BeerOrder beerOrder = beerOrderMapper.dtoToBeerOrder(beerOrderDto);
             beerOrder.setId(null); //should not be set by outside client
             beerOrder.setCustomer(customerOptional.get());
-            beerOrder.setOrderStatus(OrderStatusEnum.NEW);
+            beerOrder.setOrderStatus(BeerOrderStatusEnum.NEW);
 
             beerOrder.getBeerOrderLines().forEach(line -> line.setBeerOrder(beerOrder));
 
@@ -109,7 +109,7 @@ public class BeerOrderServiceImpl implements BeerOrderService {
     @Override
     public void pickupOrder(UUID customerId, UUID orderId) {
         BeerOrder beerOrder = getOrder(customerId, orderId);
-        beerOrder.setOrderStatus(OrderStatusEnum.PICKED_UP);
+        beerOrder.setOrderStatus(BeerOrderStatusEnum.PICKED_UP);
 
         beerOrderRepository.save(beerOrder);
     }
