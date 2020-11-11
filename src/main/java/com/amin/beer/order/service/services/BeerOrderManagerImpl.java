@@ -23,7 +23,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
 
     private final BeerOrderRepository beerOrderRepository;
     private final StateMachineFactory<BeerOrderStatusEnum, BeerOrderEventEnum> stateMachineFactory;
-    private final StateMachineInterceptor<BeerOrderStatusEnum, BeerOrderEventEnum> beerOrderStateMachineInterceptor;
+    private final StateMachineInterceptor<BeerOrderStatusEnum, BeerOrderEventEnum> beerOrderStateChangeInterceptor;
 
     @Override
     @Transactional
@@ -40,6 +40,8 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderId);
         if (isValid) {
             sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_PASSED);
+            BeerOrder validatedOrder = beerOrderRepository.findOneById(beerOrderId);
+            sendBeerOrderEvent(validatedOrder, BeerOrderEventEnum.ALLOCATE_ORDER);
         } else {
             sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_FAILED);
         }
@@ -57,7 +59,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
                 stateMachineFactory.getStateMachine(beerOrder.getId());
         stateMachine.stop();
         stateMachine.getStateMachineAccessor().doWithAllRegions(stateMachineAccess -> {
-            stateMachineAccess.addStateMachineInterceptor(beerOrderStateMachineInterceptor);
+            stateMachineAccess.addStateMachineInterceptor(beerOrderStateChangeInterceptor);
             stateMachineAccess.resetStateMachine(new DefaultStateMachineContext<>(
                     beerOrder.getOrderStatus(), null, null, null));
         });
