@@ -13,7 +13,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ValidationResultListener {
+public class BeerOrderValidationResultListener {
     private final BeerOrderManager beerOrderManager;
 
     @JmsListener(destination = JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE)
