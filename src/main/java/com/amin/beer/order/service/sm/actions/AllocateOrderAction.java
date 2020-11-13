@@ -7,6 +7,7 @@ import com.amin.beer.order.service.domain.BeerOrderStatusEnum;
 import com.amin.beer.order.service.repositories.BeerOrderRepository;
 import com.amin.beer.order.service.services.BeerOrderManagerImpl;
 import com.amin.beer.order.service.web.mappers.BeerOrderMapper;
+import com.amin.brewery.model.events.AllocateOrderRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.core.JmsTemplate;
@@ -14,6 +15,7 @@ import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -29,9 +31,12 @@ public class AllocateOrderAction implements Action<BeerOrderStatusEnum, BeerOrde
         String beerOrderId = stateContext.getMessage().getHeaders()
                 .get(BeerOrderManagerImpl.ORDER_ID_HEADER, String.class);
         if (beerOrderId != null) {
-            BeerOrder beerOrder = beerOrderRepository.findOneById(UUID.fromString(beerOrderId));
-            jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_QUEUE, beerOrderMapper.beerOrderToDto(beerOrder));
-            log.debug("Sent allocation request for order id: " + beerOrderId);
+            Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(UUID.fromString(beerOrderId));
+            beerOrderOptional.ifPresent(beerOrder -> {
+                jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_QUEUE,
+                        AllocateOrderRequest.builder().beerOrderDto(beerOrderMapper.beerOrderToDto(beerOrder)).build());
+                log.debug("Sent allocation request for order id: " + beerOrderId);
+            });
         }
     }
 }

@@ -5,7 +5,6 @@ import com.amin.beer.order.service.repositories.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
@@ -14,7 +13,7 @@ import java.util.UUID;
  */
 @Slf4j
 @RequiredArgsConstructor
-@Component
+//@Component
 public class BeerOrderBootStrap implements CommandLineRunner {
     public static final String TASTING_ROOM = "Tasting Room";
     public static final String BEER_1_UPC = "0631234200036";

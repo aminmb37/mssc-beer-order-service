@@ -12,34 +12,29 @@ import java.util.UUID;
 @Service
 @ConfigurationProperties(prefix = "amin.brewery", ignoreUnknownFields = false)
 public class BeerServiceImpl implements BeerService {
-    private final RestTemplate restTemplate;
+    public static final String BEER_PATH_V1 = "/api/v1/beer/";
+    public static final String BEER_UPC_PATH_V1 = "/api/v1/beerUpc/";
+
     private String beerServiceHost;
+    private final RestTemplate restTemplate;
 
-
-    public BeerServiceImpl(RestTemplateBuilder restTemplateBuilder)
-    {
+    public BeerServiceImpl(RestTemplateBuilder restTemplateBuilder) {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-
-    public void setBeerServiceHost(String beerServiceHost)
-    {
+    public void setBeerServiceHost(String beerServiceHost) {
         this.beerServiceHost = beerServiceHost;
     }
 
-
     @Override
-    public Optional<BeerDto> getBeerById(UUID beerId)
-    {
-        String beerPath = "/api/v1/beer/";
-        return Optional.ofNullable(restTemplate.getForObject(beerServiceHost + beerPath + beerId, BeerDto.class));
+    public Optional<BeerDto> getBeerById(UUID beerId) {
+        return Optional.ofNullable(restTemplate.getForObject(
+                beerServiceHost + BEER_PATH_V1 + beerId, BeerDto.class));
     }
 
-
     @Override
-    public Optional<BeerDto> getBeerByUpc(String beerUpc)
-    {
-        String beerUpcPath = "/api/v1/beerUpc/";
-        return Optional.ofNullable(restTemplate.getForObject(beerServiceHost + beerUpcPath + beerUpc, BeerDto.class));
+    public Optional<BeerDto> getBeerByUpc(String beerUpc) {
+        return Optional.ofNullable(restTemplate.getForObject(
+                beerServiceHost + BEER_UPC_PATH_V1 + beerUpc, BeerDto.class));
     }
 }
