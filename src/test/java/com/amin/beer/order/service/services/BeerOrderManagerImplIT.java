@@ -1,5 +1,6 @@
 package com.amin.beer.order.service.services;
 
+import com.amin.beer.order.service.config.JmsConfig;
 import com.amin.beer.order.service.domain.BeerOrder;
 import com.amin.beer.order.service.domain.BeerOrderLine;
 import com.amin.beer.order.service.domain.BeerOrderStatusEnum;
@@ -8,6 +9,7 @@ import com.amin.beer.order.service.repositories.BeerOrderRepository;
 import com.amin.beer.order.service.repositories.CustomerRepository;
 import com.amin.beer.order.service.services.beer.BeerServiceImpl;
 import com.amin.brewery.model.BeerDto;
+import com.amin.brewery.model.events.AllocationFailureEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jenspiegsa.wiremockextension.WireMockExtension;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jms.core.JmsTemplate;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -29,6 +32,7 @@ import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,17 +41,26 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ExtendWith(WireMockExtension.class)
 public class BeerOrderManagerImplIT {
     private final UUID beerId = UUID.randomUUID();
+
+    private Customer testCustomer;
+
     @Autowired
     private BeerOrderManager beerOrderManager;
+
     @Autowired
     private BeerOrderRepository beerOrderRepository;
+
     @Autowired
     private CustomerRepository customerRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
+
     @Autowired
     private WireMockServer wireMockServer;
-    private Customer testCustomer;
+
+    @Autowired
+    private JmsTemplate jmsTemplate;
 
     @BeforeEach
     void setUp() {
@@ -140,6 +153,11 @@ public class BeerOrderManagerImplIT {
             foundOrderOptional.ifPresent(foundOrder ->
                     assertEquals(BeerOrderStatusEnum.ALLOCATION_EXCEPTION, foundOrder.getOrderStatus()));
         });
+
+        AllocationFailureEvent allocationFailureEvent =
+                (AllocationFailureEvent) jmsTemplate.receiveAndConvert(JmsConfig.ALLOCATE_ORDER_FAILURE_QUEUE);
+        assertNotNull(allocationFailureEvent);
+        assertThat(allocationFailureEvent.getBeerOrderId()).isEqualTo(beerOrder.getId());
     }
 
     @Test
