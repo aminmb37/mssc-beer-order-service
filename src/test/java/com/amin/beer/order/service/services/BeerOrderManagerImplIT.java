@@ -89,7 +89,7 @@ public class BeerOrderManagerImplIT {
         wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12354")
                 .willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
         BeerOrder beerOrder = createBeerOrder();
-        BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+        beerOrderManager.newBeerOrder(beerOrder);
 
         await().untilAsserted(() -> {
             Optional<BeerOrder> foundOrderOptional = beerOrderRepository.findById(beerOrder.getId());
@@ -97,7 +97,7 @@ public class BeerOrderManagerImplIT {
                     assertEquals(BeerOrderStatusEnum.ALLOCATED, foundOrder.getOrderStatus()));
         });
 
-        beerOrderManager.beerOrderPickedUp(savedBeerOrder.getId());
+        beerOrderManager.beerOrderPickedUp(beerOrder.getId());
 
         await().untilAsserted(() -> {
             Optional<BeerOrder> foundOrderOptional = beerOrderRepository.findById(beerOrder.getId());
@@ -105,9 +105,25 @@ public class BeerOrderManagerImplIT {
                     assertEquals(BeerOrderStatusEnum.PICKED_UP, foundOrder.getOrderStatus()));
         });
 
-        Optional<BeerOrder> pickedUpOrderOptional = beerOrderRepository.findById(savedBeerOrder.getId());
+        Optional<BeerOrder> pickedUpOrderOptional = beerOrderRepository.findById(beerOrder.getId());
         pickedUpOrderOptional.ifPresent(pickedUpOrder ->
                 assertEquals(BeerOrderStatusEnum.PICKED_UP, pickedUpOrder.getOrderStatus()));
+    }
+
+    @Test
+    void testFailedValidation() throws JsonProcessingException {
+        BeerDto beerDto = BeerDto.builder().id(beerId).upc("12354").build();
+        wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12354")
+                .willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
+        BeerOrder beerOrder = createBeerOrder();
+        beerOrder.setCustomerRef("fail-validation");
+        beerOrderManager.newBeerOrder(beerOrder);
+
+        await().untilAsserted(() -> {
+            Optional<BeerOrder> foundOrderOptional = beerOrderRepository.findById(beerOrder.getId());
+            foundOrderOptional.ifPresent(foundOrder ->
+                    assertEquals(BeerOrderStatusEnum.VALIDATION_EXCEPTION, foundOrder.getOrderStatus()));
+        });
     }
 
     private BeerOrder createBeerOrder() {
