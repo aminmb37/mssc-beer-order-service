@@ -23,17 +23,21 @@ public class BeerOrderAllocationListener {
                 && allocateOrderRequest.getBeerOrderDto().getCustomerRef().equals("partial-allocation");
         boolean allocationError = allocateOrderRequest.getBeerOrderDto().getCustomerRef() != null
                 && allocateOrderRequest.getBeerOrderDto().getCustomerRef().equals("fail-allocation");
-        if (!allocationError) {
-            allocateOrderRequest.getBeerOrderDto().getBeerOrderLines().forEach(beerOrderLineDto -> {
-                if (pendingInventory) {
-                    beerOrderLineDto.setQuantityAllocated(beerOrderLineDto.getOrderQuantity() - 1);
-                } else {
-                    beerOrderLineDto.setQuantityAllocated(beerOrderLineDto.getOrderQuantity());
-                }
-            });
+        boolean sendResponse = allocateOrderRequest.getBeerOrderDto().getCustomerRef() == null
+                || !allocateOrderRequest.getBeerOrderDto().getCustomerRef().equals("dont-allocate");
+        if (sendResponse) {
+            if (!allocationError) {
+                allocateOrderRequest.getBeerOrderDto().getBeerOrderLines().forEach(beerOrderLineDto -> {
+                    if (pendingInventory) {
+                        beerOrderLineDto.setQuantityAllocated(beerOrderLineDto.getOrderQuantity() - 1);
+                    } else {
+                        beerOrderLineDto.setQuantityAllocated(beerOrderLineDto.getOrderQuantity());
+                    }
+                });
+            }
+            jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE,
+                    AllocateOrderResult.builder().beerOrderDto(allocateOrderRequest.getBeerOrderDto())
+                            .pendingInventory(pendingInventory).allocationError(allocationError).build());
         }
-        jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE,
-                AllocateOrderResult.builder().beerOrderDto(allocateOrderRequest.getBeerOrderDto())
-                        .pendingInventory(pendingInventory).allocationError(allocationError).build());
     }
 }
