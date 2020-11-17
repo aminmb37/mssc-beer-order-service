@@ -2,7 +2,6 @@ package com.amin.beer.order.service.services;
 
 import com.amin.beer.order.service.bootstrap.BeerOrderBootStrap;
 import com.amin.beer.order.service.domain.Customer;
-import com.amin.beer.order.service.repositories.BeerOrderRepository;
 import com.amin.beer.order.service.repositories.CustomerRepository;
 import com.amin.brewery.model.BeerOrderDto;
 import com.amin.brewery.model.BeerOrderLineDto;
@@ -19,17 +18,13 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class TastingRoomService {
-
     private final CustomerRepository customerRepository;
     private final BeerOrderService beerOrderService;
-    private final BeerOrderRepository beerOrderRepository;
     private final List<String> beerUpcs = new ArrayList<>(3);
 
-    public TastingRoomService(CustomerRepository customerRepository, BeerOrderService beerOrderService,
-                              BeerOrderRepository beerOrderRepository) {
+    public TastingRoomService(CustomerRepository customerRepository, BeerOrderService beerOrderService) {
         this.customerRepository = customerRepository;
         this.beerOrderService = beerOrderService;
-        this.beerOrderRepository = beerOrderRepository;
 
         beerUpcs.add(BeerOrderBootStrap.BEER_1_UPC);
         beerUpcs.add(BeerOrderBootStrap.BEER_2_UPC);
@@ -38,14 +33,14 @@ public class TastingRoomService {
 
     @Transactional
     @Scheduled(fixedRate = 2000) //run every 2 seconds
-    public void placeTastingRoomOrder(){
-
+    public void placeTastingRoomOrder() {
         List<Customer> customerList = customerRepository.findAllByCustomerNameLike(BeerOrderBootStrap.TASTING_ROOM);
 
-        if (customerList.size() == 1){ //should be just one
+        if (customerList.size() == 1) { //should be just one
             doPlaceOrder(customerList.get(0));
         } else {
             log.error("Too many or too few tasting room customers found");
+            customerList.forEach(customer -> log.debug(customer.toString()));
         }
     }
 
@@ -66,8 +61,7 @@ public class TastingRoomService {
                 .beerOrderLines(beerOrderLineSet)
                 .build();
 
-        BeerOrderDto savedOrder = beerOrderService.placeOrder(customer.getId(), beerOrder);
-
+        beerOrderService.placeOrder(customer.getId(), beerOrder);
     }
 
     private String getRandomBeerUpc() {
